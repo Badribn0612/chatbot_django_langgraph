@@ -32,17 +32,17 @@ Including another URLconf
 #     path('api/chatbot/', chatbot_api),  # Add this line
 # ]
 
-# from django.urls import path
-# from djangoapp.views import chatbot_api
-
-# urlpatterns = [
-#     # ... other paths ...
-#     path('api/chatbot/', chatbot_api),
-# ]
-
 from django.urls import path
 from djangoapp.views import chatbot_api
 
 urlpatterns = [
-    path('api/chatbot/<str:query>/', chatbot_api),  # updated line
+    # ... other paths ...
+    path('api/chatbot/', chatbot_api),
 ]
+
+# from django.urls import path
+# from djangoapp.views import chatbot_api
+
+# urlpatterns = [
+#     path('api/chatbot/<str:query>/', chatbot_api),  # updated line
+# ]
