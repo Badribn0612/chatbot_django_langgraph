@@ -12,6 +12,9 @@ langchain-tavily = "*"
 langchain-groq = "*"
 langchain-google-genai = "*"
 python-dotenv = "*"
+django = "*"
+djangorestframework = "*"
+requests = "*"
 
 [dev-packages]
 

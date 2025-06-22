@@ -12,23 +12,24 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
 class State(TypedDict):
     messages: Annotated[list, add_messages]
+
 
 graph_builder = StateGraph(State)
 
 tool = TavilySearch(max_results=2)
 tools = [tool]
-llm_with_fallbacks = (
-    init_chat_model("google_genai:gemini-2.0-flash").
-    with_fallbacks([
-        init_chat_model("groq:llama-3.3-70b-versatile")
-    ])
+llm_with_fallbacks = init_chat_model("google_genai:gemini-2.0-flash").with_fallbacks(
+    [init_chat_model("groq:llama-3.3-70b-versatile")]
 )
 llm_with_tools = llm_with_fallbacks.bind_tools(tools)
 
+
 def chatbot(state: State):
     return {"messages": [llm_with_tools.invoke(state["messages"])]}
+
 
 graph_builder.add_node("chatbot", chatbot)
 
@@ -45,5 +46,9 @@ graph_builder.add_edge(START, "chatbot")
 
 graph = graph_builder.compile()
 
-user_query = input("Enter your query: ")
-graph.invoke({"messages": user_query})
+# user_query = input("Enter your query: ")
+# graph.invoke({"messages": user_query})
+
+def get_chatbot_response(user_query: str):
+    result = graph.invoke({"messages": user_query})
+    return result
