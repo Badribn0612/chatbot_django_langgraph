@@ -1,8 +1,13 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import render
 import json
 from chatbot import get_chatbot_response
 import traceback
+
+def chat_interface(request):
+    """Serve the chat interface"""
+    return render(request, 'index.html')
 
 def serialize_message(msg):
     """Convert LangChain message objects to serializable dictionaries"""

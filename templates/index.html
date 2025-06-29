@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Chatbot</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .chat-container {
+        width: 95%;
+        max-width: 800px;
+        height: 90vh;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .chat-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        text-align: center;
+        font-size: 1.5rem;
+        font-weight: 600;
+      }
+
+      .chat-messages {
+        flex: 1;
+        padding: 24px 16px 24px 16px;
+        overflow-y: auto;
+        background: #f8f9fa;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      .message {
+        display: flex;
+        align-items: flex-end;
+        gap: 10px;
+        max-width: 80%;
+      }
+
+      .message.user {
+        align-self: flex-end;
+        flex-direction: row-reverse;
+      }
+
+      .message.bot,
+      .message.tool {
+        align-self: flex-start;
+      }
+
+      .message-content {
+        max-width: 420px;
+        padding: 15px 20px;
+        border-radius: 18px;
+        word-break: break-word;
+        line-height: 1.5;
+        font-size: 1rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      }
+
+      .message.user .message-content {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-bottom-right-radius: 5px;
+      }
+
+      .message.bot .message-content {
+        background: white;
+        color: #333;
+        border: 1px solid #e0e0e0;
+        border-bottom-left-radius: 5px;
+      }
+
+      .message-avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: white;
+        font-size: 1rem;
+        background: #28a745;
+        flex-shrink: 0;
+        margin-bottom: 2px;
+      }
+
+      .message.user .message-avatar {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        order: 2;
+      }
+
+      .message.bot .message-avatar {
+        background: #28a745;
+      }
+
+      .message.tool .message-avatar {
+        background: #ffc107;
+        color: #856404;
+      }
+
+      .tool-message {
+        background: #fffbe6 !important;
+        border: 1px solid #ffeaa7 !important;
+        color: #856404 !important;
+        font-size: 0.97rem;
+        font-style: italic;
+        border-radius: 14px !important;
+        margin-top: 2px;
+      }
+
+      .chat-input-container {
+        padding: 20px;
+        background: white;
+        border-top: 1px solid #e0e0e0;
+      }
+
+      .chat-input-form {
+        display: flex;
+        gap: 10px;
+      }
+
+      .chat-input {
+        flex: 1;
+        padding: 15px 20px;
+        border: 2px solid #e0e0e0;
+        border-radius: 25px;
+        font-size: 1rem;
+        outline: none;
+        transition: border-color 0.3s ease;
+      }
+
+      .chat-input:focus {
+        border-color: #667eea;
+      }
+
+      .send-button {
+        padding: 15px 25px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 600;
+        transition: transform 0.2s ease;
+      }
+
+      .send-button:hover {
+        transform: translateY(-2px);
+      }
+
+      .send-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .loading {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #666;
+        font-style: italic;
+      }
+
+      .loading-dots {
+        display: flex;
+        gap: 5px;
+      }
+
+      .loading-dots span {
+        width: 8px;
+        height: 8px;
+        background: #667eea;
+        border-radius: 50%;
+        animation: bounce 1.4s infinite ease-in-out;
+      }
+
+      .loading-dots span:nth-child(1) {
+        animation-delay: -0.32s;
+      }
+      .loading-dots span:nth-child(2) {
+        animation-delay: -0.16s;
+      }
+
+      @keyframes bounce {
+        0%,
+        80%,
+        100% {
+          transform: scale(0);
+        }
+        40% {
+          transform: scale(1);
+        }
+      }
+
+      @media (max-width: 768px) {
+        .chat-container {
+          width: 99%;
+          height: 99vh;
+        }
+        .message-content {
+          max-width: 95vw;
+        }
+      }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  </head>
+  <body>
+    <div class="chat-container">
+      <div class="chat-header">🤖 AI Chatbot</div>
+
+      <div class="chat-messages" id="chatMessages">
+        <div class="message bot">
+          <div class="message-avatar">AI</div>
+          <div class="message-content">
+            Hello! I'm your AI assistant. I can help you with information,
+            answer questions, and more. What would you like to know?
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-input-container">
+        <form class="chat-input-form" id="chatForm">
+          <input
+            type="text"
+            class="chat-input"
+            id="messageInput"
+            placeholder="Type your message here..."
+            autocomplete="off"
+          />
+          <button type="submit" class="send-button" id="sendButton">
+            Send
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      class ChatBot {
+        constructor() {
+          this.messages = [];
+          this.chatMessages = document.getElementById("chatMessages");
+          this.chatForm = document.getElementById("chatForm");
+          this.messageInput = document.getElementById("messageInput");
+          this.sendButton = document.getElementById("sendButton");
+
+          this.setupEventListeners();
+        }
+
+        setupEventListeners() {
+          this.chatForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            this.sendMessage();
+          });
+
+          this.messageInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              this.sendMessage();
+            }
+          });
+        }
+
+        async sendMessage() {
+          const message = this.messageInput.value.trim();
+          if (!message) return;
+
+          // Add user message to UI
+          this.addMessage(message, "user");
+          this.messageInput.value = "";
+
+          // Add user message to conversation
+          this.messages.push({ role: "user", content: message });
+
+          // Show loading
+          this.showLoading();
+
+          try {
+            const response = await fetch("/api/chatbot/", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                messages: this.messages,
+                query: message,
+              }),
+            });
+
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            // Remove loading
+            this.removeLoading();
+
+            // Find the last AIMessage or ToolMessage
+            const responseMessages = data.messages;
+            let lastMsg = null;
+            for (let i = responseMessages.length - 1; i >= 0; i--) {
+              if (
+                responseMessages[i].type === "AIMessage" ||
+                responseMessages[i].type === "ToolMessage"
+              ) {
+                lastMsg = responseMessages[i];
+                break;
+              }
+            }
+
+            if (lastMsg) {
+              if (lastMsg.type === "AIMessage") {
+                this.messages.push({
+                  role: "assistant",
+                  content: lastMsg.content,
+                });
+                this.addMessage(lastMsg.content, "bot");
+              } else if (lastMsg.type === "ToolMessage") {
+                this.messages.push({
+                  role: "tool",
+                  content: lastMsg.content,
+                  tool_call_id: lastMsg.tool_call_id,
+                });
+                this.addToolMessage(lastMsg.content);
+              }
+            } else {
+              this.addMessage("Sorry, I did not get a response.", "bot");
+            }
+          } catch (error) {
+            console.error("Error:", error);
+            this.removeLoading();
+            this.addMessage(
+              "Sorry, I encountered an error. Please try again.",
+              "bot"
+            );
+          }
+        }
+
+        addMessage(content, sender) {
+          const messageDiv = document.createElement("div");
+          messageDiv.className = `message ${sender}`;
+
+          const avatar = document.createElement("div");
+          avatar.className = "message-avatar";
+          avatar.textContent = sender === "user" ? "U" : "AI";
+
+          const messageContent = document.createElement("div");
+          messageContent.className = "message-content";
+          messageContent.innerHTML = marked.parse(content);
+
+          messageDiv.appendChild(avatar);
+          messageDiv.appendChild(messageContent);
+
+          this.chatMessages.appendChild(messageDiv);
+          this.scrollToBottom();
+        }
+
+        addToolMessage(content) {
+          const messageDiv = document.createElement("div");
+          messageDiv.className = "message bot";
+
+          const avatar = document.createElement("div");
+          avatar.className = "message-avatar";
+          avatar.textContent = "🔧";
+
+          const messageContent = document.createElement("div");
+          messageContent.className = "message-content tool-message";
+          messageContent.innerHTML = marked.parse(
+            "Tool used: " +
+              content.substring(0, 100) +
+              (content.length > 100 ? "..." : "")
+          );
+
+          messageDiv.appendChild(avatar);
+          messageDiv.appendChild(messageContent);
+
+          this.chatMessages.appendChild(messageDiv);
+          this.scrollToBottom();
+        }
+
+        showLoading() {
+          const loadingDiv = document.createElement("div");
+          loadingDiv.className = "message bot";
+          loadingDiv.id = "loadingMessage";
+
+          const avatar = document.createElement("div");
+          avatar.className = "message-avatar";
+          avatar.textContent = "AI";
+
+          const loadingContent = document.createElement("div");
+          loadingContent.className = "message-content loading";
+          loadingContent.innerHTML = `
+                    Thinking
+                    <div class="loading-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                `;
+
+          loadingDiv.appendChild(avatar);
+          loadingDiv.appendChild(loadingContent);
+
+          this.chatMessages.appendChild(loadingDiv);
+          this.scrollToBottom();
+        }
+
+        removeLoading() {
+          const loadingMessage = document.getElementById("loadingMessage");
+          if (loadingMessage) {
+            loadingMessage.remove();
+          }
+        }
+
+        scrollToBottom() {
+          this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+        }
+      }
+
+      // Initialize chatbot when page loads
+      document.addEventListener("DOMContentLoaded", () => {
+        new ChatBot();
+      });
+    </script>
+  </body>
+</html>
