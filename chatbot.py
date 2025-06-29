@@ -49,6 +49,8 @@ graph = graph_builder.compile()
 # user_query = input("Enter your query: ")
 # graph.invoke({"messages": user_query})
 
-def get_chatbot_response(user_query: str):
-    result = graph.invoke({"messages": user_query})
+def get_chatbot_response(messages: list):
+    print(f"Input messages to graph: {messages}")
+    result = graph.invoke({"messages": messages})
+    print(f"Graph result: {result}")
     return result
