@@ -51,7 +51,7 @@ chatbot_django_langgraph/
 ### Step 1: Clone the Repository
 
 ```bash
-git clone
+git clone https://github.com/Badribn0612/chatbot_django_langgraph.git
 cd chatbot_django_langgraph
 ```
 
