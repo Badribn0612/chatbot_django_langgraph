@@ -1,3 +1,5 @@
+[Read the full tutorial article here](https://www.analyticsvidhya.com/blog/2025/07/build-a-chatbot-from-scratch/)
+
 # AI Chatbot with Django and LangGraph
 
 A modern AI chatbot built with Django, LangGraph, and LangChain that provides a web-based chat interface with real-time AI responses and tool integration.
